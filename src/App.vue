@@ -48,7 +48,7 @@ onMounted(() => {
           <div class="hero-text-box animate-fade-in">
             <h1 class="hero-title">AGESCI Genova 60</h1>
             <p class="hero-subtitle">
-              Siamo un'associazione educativa che si propone di formare buoni cittadini e buoni cristiani attraverso il metodo scout.
+              Siamo un'associazione educativa che si propone di formare buoni cittadini, liberi e responsabili, attraverso il metodo scout.
             </p>
             <div class="hero-actions">
               <a href="#contatti" class="btn btn-primary">Unisciti all'avventura</a>
