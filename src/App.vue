@@ -57,13 +57,18 @@ onMounted(() => {
         </div>
       </section>
 
-      <!-- Chi Siamo & Missione -->
+      <!-- Chi Siamo -->
       <section id="chisiamo" class="section container">
         <div class="section-header">
-          <h2>La Nostra Missione</h2>
-          <p>L'AGESCI è la più grande realtà scout in Italia. Il nostro percorso si fonda su tre pilastri principali.</p>
+          <h2>Chi Siamo</h2>
+          <p>Siamo il Gruppo Scout A.G.E.S.C.I. (Associazione Guide E Scouts Cattolici Italiani) di Genova Pontedecimo. Le nostre sedi sono nei pressi della Parrocchia di San Giacomo Maggiore (Branco e Reparto) e nell'OREB del Ricreatorio "S. Luigi Gonzaga" (Clan e Comunità Capi).</p>
         </div>
         
+        <div class="text-center mt-5 mb-4">
+          <h2>La Nostra Missione</h2>
+          <p style="color: var(--text-secondary);">Il nostro percorso educativo si fonda su tre pilastri principali.</p>
+        </div>
+
         <div class="grid-3">
           <div class="card mission-card">
             <div class="card-icon">🌍</div>
@@ -82,14 +87,38 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="method-section mt-5 card p-4">
-          <h2>Il Metodo: Imparare facendo</h2>
-          <p>A differenza di una scuola tradizionale, nell'AGESCI si impara attraverso l'esperienza pratica:</p>
-          <ul>
-            <li><strong>Vita all'aperto:</strong> Il contatto con la natura è l'aula principale.</li>
-            <li><strong>Piccoli gruppi:</strong> La "squadriglia" permette di assumersi responsabilità concrete fin da piccoli.</li>
-            <li><strong>La Promessa:</strong> Ogni scout sceglie consapevolmente di impegnarsi a fare "del proprio meglio" per aiutare gli altri.</li>
-          </ul>
+        <div class="text-center mt-5 mb-4">
+          <h2>I Nostri Quattro Punti</h2>
+          <p style="color: var(--text-secondary); max-width: 800px; margin: 0 auto;">
+            Educhiamo giocando, attraverso un metodo attivo, semplice e concreto, con lo stile dell'<em>imparare facendo</em>. A fondamento della nostra proposta vi sono 4 punti:
+          </p>
+        </div>
+        
+        <div class="grid-2">
+          <div class="card mission-card">
+            <div class="card-icon">🎯</div>
+            <h3>Formazione del carattere</h3>
+            <p>Sviluppare una relazione positiva con se stessi per fare scelte consapevoli, assumersi responsabilità e costruire il proprio progetto di vita.</p>
+          </div>
+          <div class="card mission-card">
+            <div class="card-icon">🏃‍♂️</div>
+            <h3>Salute e forza fisica</h3>
+            <p>Conoscere il proprio corpo e perseguire in armonia uno stile di vita sano e naturale.</p>
+          </div>
+          <div class="card mission-card">
+            <div class="card-icon">🛠️</div>
+            <h3>Abilità manuale</h3>
+            <p>Avere una relazione creativa con le cose per sviluppare intelligenza pratica e autonomia.</p>
+          </div>
+          <div class="card mission-card">
+            <div class="card-icon">🤝</div>
+            <h3>Servizio del prossimo</h3>
+            <p>Educare all'amore per gli altri, al bene comune, alla solidarietà e al rendersi utili mettendo a disposizione le proprie capacità.</p>
+          </div>
+        </div>
+
+        <div class="mt-5 conclusion-text">
+          <strong>L'intero cammino scout viene vissuto come un grande gioco, in cui ognuno trova il proprio ruolo e si diverte in comunità, educando all'autonomia, alla responsabilità e a una coscienza critica e libera.</strong>
         </div>
       </section>
 
@@ -156,7 +185,7 @@ onMounted(() => {
       <section id="contatti" class="section container">
         <div class="section-header">
           <h2>Contatti</h2>
-          <p>Vuoi unirti a noi o chiederci informazioni? Ecco dove trovarci!</p>
+          <p>Se vi abbiamo interessato, o anche solo incuriosito, contattateci o veniteci a trovare presso le nostre sedi in occasione delle nostre attività!</p>
         </div>
         <div class="grid-3 contact-grid">
           <a href="https://maps.app.goo.gl/53p4qJX6H4D8eEaTA" target="_blank" class="card contact-card">
@@ -315,8 +344,30 @@ onMounted(() => {
 
 /* Typography Utilities */
 .mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
 .mt-5 { margin-top: 3rem; }
+.mb-4 { margin-bottom: 2rem; }
 .p-4 { padding: 2rem; }
+.text-center { text-align: center; }
+
+.point-item h4 {
+  color: var(--accent-green);
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.point-item p {
+  color: var(--text-secondary);
+}
+
+.conclusion-text {
+  padding: 1.5rem 0;
+  color: var(--text-primary);
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
 
 /* Generic Sections */
 .section {
@@ -354,6 +405,12 @@ onMounted(() => {
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
 }
 
@@ -463,7 +520,7 @@ onMounted(() => {
 
 /* Responsive */
 @media (max-width: 900px) {
-  .grid-3 {
+  .grid-3, .grid-2 {
     grid-template-columns: 1fr;
   }
   
