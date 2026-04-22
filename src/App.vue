@@ -159,7 +159,7 @@ onMounted(() => {
           <p>Vuoi unirti a noi o chiederci informazioni? Ecco dove trovarci!</p>
         </div>
         <div class="grid-3 contact-grid">
-          <a href="https://maps.google.com/?q=via+Guido+Poli+5,+16164+Genova" target="_blank" class="card contact-card">
+          <a href="https://maps.app.goo.gl/53p4qJX6H4D8eEaTA" target="_blank" class="card contact-card">
             <div class="contact-icon-wrapper">📍</div>
             <h3>Vieni a Trovarci</h3>
             <p>via Guido Poli 5<br/>16164 Genova</p>
