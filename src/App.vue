@@ -270,7 +270,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   /* Using one of the provided photos */
-  background-image: url('./assets/IMG_8056.JPG');
+  background-image: url('./assets/IMG_8056.webp');
   background-size: cover;
   background-position: center;
 }
