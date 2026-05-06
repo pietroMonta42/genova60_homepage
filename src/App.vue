@@ -212,7 +212,13 @@ onMounted(() => {
     <footer class="footer">
       <div class="container footer-content">
         <img src="./assets/AGESCI.png" alt="Logo AGESCI" class="footer-logo" />
-        <p>&copy; {{ new Date().getFullYear() }} AGESCI Gruppo Genova 60. Tutti i diritti riservati.</p>
+        <div class="footer-info">
+          <p><strong>AGESCI GRUPPO GENOVA 60 APS</strong></p>
+          <p>Via Guido Poli 5, 16164 Genova</p>
+          <p>C.F. 95121410104</p>
+          <p>Email: <a href="mailto:genova60@liguria.agesci.it">genova60@liguria.agesci.it</a> &bull; Pec: <a href="mailto:genova60@pec.agesci.it">genova60@pec.agesci.it</a></p>
+        </div>
+        <p class="copyright">&copy; {{ new Date().getFullYear() }} AGESCI Gruppo Genova 60. Tutti i diritti riservati.</p>
       </div>
     </footer>
   </div>
@@ -515,6 +521,33 @@ onMounted(() => {
   height: 60px;
   width: auto;
   margin-bottom: 1rem;
+  opacity: 0.8;
+}
+
+.footer-info {
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.footer-info p {
+  margin: 0.25rem 0;
+}
+
+.footer-info a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-info a:hover {
+  color: var(--accent-green);
+  text-decoration: underline;
+}
+
+.copyright {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
   opacity: 0.8;
 }
 
