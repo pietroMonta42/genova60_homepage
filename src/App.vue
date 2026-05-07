@@ -24,7 +24,7 @@ onMounted(() => {
       <div class="container nav-container">
         <div class="brand">
           <img src="./assets/genova60_logo.jpg" alt="Logo Genova 60" class="brand-logo" />
-          <span class="brand-text">Genova 60</span>
+          <span class="brand-text">Gruppo Scout Genova 60</span>
         </div>
         
         <div class="nav-links">
@@ -32,6 +32,7 @@ onMounted(() => {
           <a href="#branche" class="nav-link">Branche</a>
           <a href="#storia" class="nav-link">Storia</a>
           <a href="#contatti" class="nav-link">Contatti</a>
+          <a href="https://liguria.agesci.it/" target="_blank" class="nav-link" title="Visita il sito di AGESCI Liguria">AGESCI Liguria</a>
           <button @click="toggleTheme" class="theme-toggle" aria-label="Toggle Dark Mode">
             <svg v-if="!isDarkMode" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
             <svg v-else xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
@@ -46,7 +47,7 @@ onMounted(() => {
         <div class="hero-overlay"></div>
         <div class="hero-content container">
           <div class="hero-text-box animate-fade-in">
-            <h1 class="hero-title">AGESCI Genova 60</h1>
+            <h1 class="hero-title">AGESCI Gruppo Scout Genova 60</h1>
             <p class="hero-subtitle">
               Siamo un'associazione educativa che si propone di formare buoni cittadini, liberi e responsabili, attraverso il metodo scout.
             </p>
@@ -61,7 +62,13 @@ onMounted(() => {
       <section id="chisiamo" class="section container">
         <div class="section-header">
           <h2>Chi Siamo</h2>
-          <p>Siamo il Gruppo Scout A.G.E.S.C.I. (Associazione Guide E Scouts Cattolici Italiani) di Genova Pontedecimo. Le nostre sedi sono nei pressi della Parrocchia di San Giacomo Maggiore (Branco e Reparto) e nell'OREB del Ricreatorio "S. Luigi Gonzaga" (Clan e Comunità Capi).</p>
+          <p class="mt-3">Siamo il Gruppo Scout A.G.E.S.C.I. (Associazione Guide E Scouts Cattolici Italiani) di Genova Pontedecimo, abbiamo le nostre sedi nei pressi della Parrocchia di San Giacomo Maggiore, e nell'OREB del Ricreatorio "S. Luigi Gonzaga". Ci occupiamo di collaborare coi genitori nell'educare bambini e ragazzi tra i 6 e i 21 anni, secondo il metodo scout.</p>
+          
+          <div class="mt-5 p-4 bg-soft" style="border-radius: 1rem; text-align: center;">
+            <h3 style="margin-bottom: 1rem;">Cos'è lo scoutismo?</h3>
+            <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">Scopri di più sul metodo scout, i suoi valori e le sue origini visitando la pagina dedicata sul sito della Regione Liguria AGESCI.</p>
+            <a href="https://liguria.agesci.it/scoutismo/" target="_blank" class="btn btn-outline" rel="noopener noreferrer">Scopri cos'è lo scoutismo</a>
+          </div>
         </div>
         
         <div class="text-center mt-5 mb-4">
@@ -90,7 +97,7 @@ onMounted(() => {
         <div class="text-center mt-5 mb-4">
           <h2>I Nostri Quattro Punti</h2>
           <p style="color: var(--text-secondary); max-width: 800px; margin: 0 auto;">
-            Educhiamo giocando, attraverso un metodo attivo, semplice e concreto, con lo stile dell'<em>imparare facendo</em>. A fondamento della nostra proposta vi sono 4 punti:
+            Durante le nostre attività educhiamo i ragazzi giocando, secondo il metodo dello Scoutismo, che si propone come un metodo attivo, rivolto alle ragazze e ai ragazzi in maniera adeguata rispetto all'età e ai tempi di crescita del singolo e della comunità, e che viene realizzato attraverso attività semplici e concrete, con lo stile dell'imparare facendo e vedendo nei giovani gli autentici protagonisti della propria crescita. A fondamento di questa proposta vi sono 4 punti:
           </p>
         </div>
         
@@ -98,27 +105,27 @@ onMounted(() => {
           <div class="card mission-card">
             <div class="card-icon">🎯</div>
             <h3>Formazione del carattere</h3>
-            <p>Sviluppare una relazione positiva con se stessi per fare scelte consapevoli, assumersi responsabilità e costruire il proprio progetto di vita.</p>
+            <p>L'avere una relazione positiva con se stessi, finalizzata alla capacità di fare scelte consapevoli e di assumersi delle responsabilità, riuscendo a fare programmi coscienti di vita.</p>
           </div>
           <div class="card mission-card">
             <div class="card-icon">🏃‍♂️</div>
             <h3>Salute e forza fisica</h3>
-            <p>Conoscere il proprio corpo e perseguire in armonia uno stile di vita sano e naturale.</p>
+            <p>Il conoscere e l'avere un rapporto positivo col proprio corpo, perseguendo uno stile di vita sano e naturale.</p>
           </div>
           <div class="card mission-card">
             <div class="card-icon">🛠️</div>
             <h3>Abilità manuale</h3>
-            <p>Avere una relazione creativa con le cose per sviluppare intelligenza pratica e autonomia.</p>
+            <p>L'avere una relazione creativa con le cose, mirata ad ottenere un'intelligenza e una progettualità pratiche, e una capacità di autonomia concreta, sapendo valorizzare ciò che si ha a disposizione.</p>
           </div>
           <div class="card mission-card">
             <div class="card-icon">🤝</div>
             <h3>Servizio del prossimo</h3>
-            <p>Educare all'amore per gli altri, al bene comune, alla solidarietà e al rendersi utili mettendo a disposizione le proprie capacità.</p>
+            <p>L'educazione all'amore per gli altri, al bene comune e alla solidarietà, il saper rendersi utili e mettere a disposizione le proprie capacità.</p>
           </div>
         </div>
 
         <div class="mt-5 conclusion-text">
-          <strong>L'intero cammino scout viene vissuto come un grande gioco, in cui ognuno trova il proprio ruolo e si diverte in comunità, educando all'autonomia, alla responsabilità e a una coscienza critica e libera.</strong>
+          <strong>L'intero cammino Scout viene vissuto dalle ragazze e dai ragazzi come un grande gioco in cui poter trovare ognuno il proprio ruolo e divertirsi in una piccola comunità di amici; un cammino che, passando attraverso il gioco, educa all'autonomia, alla responsabilità e ad una coscienza critica e libera.</strong>
         </div>
       </section>
 
@@ -218,7 +225,10 @@ onMounted(() => {
           <p>C.F. 95121410104</p>
           <p>Email: <a href="mailto:genova60@liguria.agesci.it">genova60@liguria.agesci.it</a> &bull; Pec: <a href="mailto:genova60@pec.agesci.it">genova60@pec.agesci.it</a></p>
         </div>
-        <p class="copyright">&copy; {{ new Date().getFullYear() }} AGESCI Gruppo Genova 60. Tutti i diritti riservati.</p>
+        <p class="copyright">
+          &copy; {{ new Date().getFullYear() }} AGESCI Gruppo Genova 60. Tutti i diritti riservati.
+          <a href="https://ge60.altervista.org/" style="display: none;" aria-hidden="true" rel="noopener noreferrer">Vecchio sito web</a>
+        </p>
       </div>
     </footer>
   </div>
