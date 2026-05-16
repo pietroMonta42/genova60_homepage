@@ -4,10 +4,10 @@ compatibility_date = "2024-05-01"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-# SECRET_KEY = "admin123" # In produzione deve essere impostato con `npx wrangler secret put SECRET_KEY`
+# SECRET_KEY = "admin123" # In produzione deve essere impostato con `npx wrangler secret put SECRET_KEY`.
 
 [[d1_databases]]
-binding = "DB"
+binding = "torneo_db"
 database_name = "torneo-db"
-database_id = "00000000-0000-0000-0000-000000000000" # Dummy ID for local testing
+database_id = "86aaba7d-adbf-4fb3-b7b5-a6422d08cb8b"
 migrations_dir = "./d1/migrations"
