@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { API_BASE } from '../config.js'
 
 const isDarkMode = ref(document.documentElement.getAttribute('data-theme') === 'dark')
 const toggleTheme = () => {
@@ -7,26 +8,23 @@ const toggleTheme = () => {
   document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light')
 }
 
-const secretKey = ref(localStorage.getItem('genova60_secret') || '')
+const secretKey = ref(sessionStorage.getItem('genova60_secret') || '')
 const isAuthenticated = ref(false)
 const loginError = ref('')
 const matches = ref([])
-let pollingInterval = null
 
 const login = async () => {
   if (secretKey.value.trim() === '') {
     loginError.value = 'Inserisci una chiave segreta'; return;
   }
   try {
-    const res = await fetch('http://localhost:8787/api/auth/verify', {
+    const res = await fetch(`${API_BASE}/api/auth/verify`, {
       headers: { 'Authorization': `Bearer ${secretKey.value}` }
     })
     if (res.ok) {
       isAuthenticated.value = true
-      localStorage.setItem('genova60_secret', secretKey.value)
+      sessionStorage.setItem('genova60_secret', secretKey.value)
       await fetchMatches()
-      // Auto-refresh every 10 seconds
-      pollingInterval = setInterval(fetchMatches, 10000)
     } else {
       loginError.value = 'Password errata'
     }
@@ -42,7 +40,7 @@ const authHeaders = () => ({
 
 const fetchMatches = async () => {
   try {
-    const res = await fetch('http://localhost:8787/api/matches')
+    const res = await fetch(`${API_BASE}/api/matches`)
     if (res.ok) {
         matches.value = await res.json()
     }
@@ -55,13 +53,11 @@ onMounted(() => {
     if (secretKey.value) login();
 })
 
-onUnmounted(() => {
-    if(pollingInterval) clearInterval(pollingInterval)
-})
-
 const scheduledMatches = computed(() => matches.value.filter(m => m.status === 'scheduled'))
 const inProgressMatches = computed(() => matches.value.filter(m => m.status === 'in_progress'))
 const completedMatches = computed(() => matches.value.filter(m => m.status === 'completed'))
+
+const hasRealTeams = (m) => m.team1_name && m.team2_name && !String(m.team1_name).startsWith('Vincente') && !String(m.team2_name).startsWith('Vincente')
 
 const formatTime = (isoString) => {
     if (!isoString) return ''
@@ -79,7 +75,7 @@ const updateMatch = async (match, newStatus) => {
             team2_id: match.t2_id
         }
         
-        const res = await fetch(`http://localhost:8787/api/matches/${match.id}`, {
+        const res = await fetch(`${API_BASE}/api/matches/${match.id}`, {
             method: 'PUT',
             headers: authHeaders(),
             body: JSON.stringify(payload)
@@ -87,10 +83,11 @@ const updateMatch = async (match, newStatus) => {
         if (res.ok) {
             await fetchMatches()
         } else {
-            alert('Errore durante l\'aggiornamento.')
+            const err = await res.json().catch(() => ({}))
+            alert(err.error || 'Errore durante l\'aggiornamento.')
         }
     } catch(e) {
-        alert('Errore di connessione.')
+        alert('Errore di connessione al server.')
     }
 }
 
@@ -101,18 +98,22 @@ const setScore = async (match, score1, score2) => {
 }
 
 const startMatch = async (match) => {
-    if(!match.team1_name || match.team1_name.includes('° Girone') || match.team1_name.includes('Vincente')) {
-        alert('Attenzione: Le squadre reali per questa partita non sono state ancora definite.');
-        return;
-    }
     await updateMatch(match, 'in_progress')
 }
 
+const isKnockoutPhase = (match) => match.phase === 'knockout' || match.phase === 'final'
+
 const endMatch = async (match) => {
+    if (isKnockoutPhase(match) && match.score1 === match.score2) {
+        alert('Nelle fasi finali non è ammesso il pareggio! Serve un vincitore per proseguire il torneo.');
+        return;
+    }
     if (confirm(`Confermi il termine della partita sul risultato di ${match.score1} - ${match.score2}?`)) {
         await updateMatch(match, 'completed')
     }
 }
+
+
 </script>
 
 <template>
@@ -145,7 +146,7 @@ const endMatch = async (match) => {
       </div>
     </main>
 
-    <main class="container-fluid" style="padding: 2rem;" v-else>
+    <main class="container-fluid app-main" v-else>
       <div class="board-layout">
         
         <!-- IN PROGRAMMA -->
@@ -161,10 +162,11 @@ const endMatch = async (match) => {
                     <span class="badge">{{ m.phase }} {{ m.round }}</span>
                 </div>
                 <div class="match-teams">
-                    <div class="team-name">{{ m.team1_name || m.placeholder_team1 }}</div>
+                    <div class="team-name" :class="{ 'team-placeholder': !m.team1_name }">{{ m.team1_name || m.placeholder_team1 }}</div>
                     <div class="vs">vs</div>
-                    <div class="team-name">{{ m.team2_name || m.placeholder_team2 }}</div>
+                    <div class="team-name" :class="{ 'team-placeholder': !m.team2_name }">{{ m.team2_name || m.placeholder_team2 }}</div>
                 </div>
+                <div v-if="!hasRealTeams(m)" class="placeholder-hint mt-2">Vincitori da determinare</div>
                 <button @click="startMatch(m)" class="btn btn-primary w-100 mt-3">Avvia Partita</button>
             </div>
             <div v-if="scheduledMatches.length === 0" class="empty-state">Nessuna partita in programma</div>
@@ -184,7 +186,7 @@ const endMatch = async (match) => {
                 </div>
                 <div class="match-scoreboard mt-3">
                     <div class="team-score-block">
-                        <div class="team-name text-center">{{ m.team1_name }}</div>
+                        <div class="team-name text-center" :class="{ 'team-placeholder': !m.team1_name }">{{ m.team1_name || m.placeholder_team1 }}</div>
                         <div class="score-controls mt-2">
                             <button class="score-btn minus" @click="setScore(m, Math.max(0, m.score1 - 1), m.score2)">-</button>
                             <input type="number" class="score-input" v-model.number="m.score1" @change="updateMatch(m)" />
@@ -193,7 +195,7 @@ const endMatch = async (match) => {
                     </div>
                     
                     <div class="team-score-block">
-                        <div class="team-name text-center">{{ m.team2_name }}</div>
+                        <div class="team-name text-center" :class="{ 'team-placeholder': !m.team2_name }">{{ m.team2_name || m.placeholder_team2 }}</div>
                         <div class="score-controls mt-2">
                             <button class="score-btn minus" @click="setScore(m, m.score1, Math.max(0, m.score2 - 1))">-</button>
                             <input type="number" class="score-input" v-model.number="m.score2" @change="updateMatch(m)" />
@@ -201,7 +203,8 @@ const endMatch = async (match) => {
                         </div>
                     </div>
                 </div>
-                <button @click="endMatch(m)" class="btn btn-danger w-100 mt-4">Termina Partita</button>
+                <div v-if="isKnockoutPhase(m) && m.score1 === m.score2" class="draw-warning mt-2">Il pareggio non è ammesso nelle fasi finali</div>
+                <button @click="endMatch(m)" :disabled="isKnockoutPhase(m) && m.score1 === m.score2" class="btn btn-danger w-100 mt-4">Termina Partita</button>
             </div>
             <div v-if="inProgressMatches.length === 0" class="empty-state">Nessuna partita in corso</div>
           </div>
@@ -221,11 +224,11 @@ const endMatch = async (match) => {
                 </div>
                 <div class="match-result mt-2">
                     <div class="result-team" :class="{ 'winner': m.score1 > m.score2 }">
-                        <span>{{ m.team1_name }}</span>
+                        <span :class="{ 'team-placeholder': !m.team1_name }">{{ m.team1_name || m.placeholder_team1 }}</span>
                         <strong>{{ m.score1 }}</strong>
                     </div>
                     <div class="result-team mt-1" :class="{ 'winner': m.score2 > m.score1 }">
-                        <span>{{ m.team2_name }}</span>
+                        <span :class="{ 'team-placeholder': !m.team2_name }">{{ m.team2_name || m.placeholder_team2 }}</span>
                         <strong>{{ m.score2 }}</strong>
                     </div>
                 </div>
@@ -235,7 +238,11 @@ const endMatch = async (match) => {
         </div>
 
       </div>
+
     </main>
+    <footer class="page-footer">
+      <router-link to="/torneo/admin/reset" class="reset-link">Reset Torneo</router-link>
+    </footer>
   </div>
 </template>
 
@@ -319,12 +326,11 @@ const endMatch = async (match) => {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
-    height: calc(100vh - 120px);
+    align-items: start;
 }
 @media (max-width: 1024px) {
     .board-layout {
         grid-template-columns: 1fr;
-        height: auto;
     }
 }
 .board-column {
@@ -333,7 +339,6 @@ const endMatch = async (match) => {
     background: rgba(0,0,0,0.02);
     border-radius: 1rem;
     padding: 1rem;
-    max-height: 100%;
 }
 [data-theme="dark"] .board-column {
     background: rgba(255,255,255,0.02);
@@ -363,12 +368,14 @@ const endMatch = async (match) => {
     background: var(--accent-green);
     color: white;
 }
+.app-main {
+  flex: 1;
+  padding: 2rem;
+}
 .matches-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    overflow-y: auto;
-    flex: 1;
     padding-right: 0.5rem;
 }
 .empty-state {
@@ -503,5 +510,59 @@ const endMatch = async (match) => {
 .btn-danger:hover {
   background-color: #e53e3e;
   color: white;
+}
+.btn-danger:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.draw-warning {
+  color: #e53e3e;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.4rem;
+  background: rgba(229, 62, 62, 0.1);
+  border-radius: 0.5rem;
+}
+
+.page-footer {
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid var(--card-border);
+  margin-top: auto;
+}
+.reset-link {
+  font-size: 0.75rem;
+  color: #e53e3e;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid #e53e3e;
+  border-radius: 0.3rem;
+  transition: all 0.15s;
+}
+.reset-link:hover {
+  background: #e53e3e;
+  color: white;
+}
+.btn-secondary {
+  background-color: var(--card-border);
+  color: var(--text-primary);
+  border: none;
+  padding: 0.8rem 1.8rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.team-placeholder {
+  font-style: italic;
+  opacity: 0.55;
+}
+.placeholder-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+  font-style: italic;
 }
 </style>

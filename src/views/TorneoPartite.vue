@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { TournamentBracket } from 'vue3-tournament'
 import 'vue3-tournament/style.css'
+import { API_BASE } from '../config.js'
 
 const isDarkMode = ref(document.documentElement.getAttribute('data-theme') === 'dark')
 
@@ -12,28 +13,32 @@ const toggleTheme = () => {
 
 const matches = ref([])
 const loading = ref(true)
+const bracketKey = ref(0)
 
 const activeTab = ref('gironi')
 
-onMounted(async () => {
+const fetchMatches = async () => {
   try {
-    const res = await fetch('http://localhost:8787/api/matches')
-    if (res.ok) matches.value = await res.json()
+    const res = await fetch(`${API_BASE}/api/matches`)
+    if (res.ok) {
+      matches.value = await res.json()
+      bracketKey.value++
+    }
   } catch (e) {
     console.error('Error fetching data', e)
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(fetchMatches)
 
 // Filtra i match dei gironi
 const groupMatches = computed(() => matches.value.filter(m => m.phase === 'groups'))
 
 // Prepara i rounds per il componente vue3-tournament
 const bracketRounds = computed(() => {
-  const sf = matches.value.filter(m => m.round === 'SF')
-  const final = matches.value.filter(m => m.round === 'F')
-  const qf = matches.value.filter(m => m.round === 'QF')
+  const roundOrder = ['R128', 'R64', 'R32', 'R16', 'QF', 'SF', 'F']
 
   const formatMatch = (m) => {
     let winner = null
@@ -57,14 +62,43 @@ const bracketRounds = computed(() => {
     }
   }
 
+  const knockoutMatches = matches.value.filter(
+    m => m.phase === 'knockout' || m.phase === 'final'
+  )
+
+  const groups = {}
+  for (const m of knockoutMatches) {
+    const r = m.round
+    if (!groups[r]) groups[r] = []
+    groups[r].push(m)
+  }
+
   const rounds = []
-  
-  if (qf.length > 0) rounds.push({ matchs: qf.map(formatMatch) })
-  if (sf.length > 0) rounds.push({ matchs: sf.map(formatMatch) })
-  if (final.length > 0) rounds.push({ matchs: final.map(formatMatch) })
+  for (const roundName of roundOrder) {
+    if (groups[roundName] && groups[roundName].length > 0) {
+      rounds.push({ matchs: groups[roundName].map(formatMatch) })
+    }
+  }
 
   return rounds
 })
+
+const hasGroups = computed(() => groupMatches.value.length > 0)
+
+const onTabChange = (tab) => {
+  activeTab.value = tab
+  if (tab === 'tabellone') fetchMatches()
+}
+
+// Auto-switch to tabellone if no group phase exists
+const switchToTabelloneIfNoGroups = () => {
+  if (activeTab.value === 'gironi' && !hasGroups.value && bracketRounds.value.length > 0) {
+    activeTab.value = 'tabellone'
+  }
+}
+
+watch(groupMatches, switchToTabelloneIfNoGroups)
+watch(bracketRounds, switchToTabelloneIfNoGroups)
 </script>
 
 <template>
@@ -90,15 +124,16 @@ const bracketRounds = computed(() => {
     <main class="container section">
       <div class="section-header">
         <h1 style="font-size: 3rem; color: var(--accent-green);">Calendario e Tabellone</h1>
-        <p>Scopri i prossimi incontri, le fasi a gironi e il tabellone a eliminazione diretta.</p>
+        <p v-if="hasGroups">Scopri i prossimi incontri, le fasi a gironi e il tabellone a eliminazione diretta.</p>
+        <p v-else>Scopri il tabellone a eliminazione diretta.</p>
       </div>
 
       <div class="tabs-container mb-4">
-        <button class="tab-btn" :class="{ active: activeTab === 'gironi' }" @click="activeTab = 'gironi'">Fase a Gironi</button>
-        <button class="tab-btn" :class="{ active: activeTab === 'tabellone' }" @click="activeTab = 'tabellone'">Tabellone Finale</button>
+        <button v-if="hasGroups" class="tab-btn" :class="{ active: activeTab === 'gironi' }" @click="onTabChange('gironi')">Fase a Gironi</button>
+        <button class="tab-btn" :class="{ active: activeTab === 'tabellone' }" @click="onTabChange('tabellone')">Tabellone Finale</button>
       </div>
 
-      <div v-if="activeTab === 'gironi'" class="card p-4">
+      <div v-if="activeTab === 'gironi' && hasGroups" class="card p-4">
         <div class="matches-list">
           <div v-if="loading" class="text-center p-4">Caricamento partite...</div>
           <div v-else-if="groupMatches.length === 0" class="text-center p-4">Nessuna partita a gironi in programma.</div>
@@ -129,7 +164,7 @@ const bracketRounds = computed(() => {
         <div v-if="loading" class="text-center p-4">Caricamento tabellone...</div>
         <div v-else-if="bracketRounds.length === 0" class="text-center p-4">Il tabellone finale non è ancora stato generato.</div>
         <div v-else class="bracket-wrapper">
-          <TournamentBracket :rounds="bracketRounds" />
+          <TournamentBracket :rounds="bracketRounds" :key="bracketKey" />
         </div>
       </div>
     </main>

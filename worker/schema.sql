@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS tournament_settings;
 CREATE TABLE teams (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  group_name TEXT NOT NULL,
+  group_name TEXT NOT NULL DEFAULT '',
   points INTEGER DEFAULT 0
 );
 
@@ -26,21 +26,15 @@ CREATE TABLE matches (
   FOREIGN KEY(team2_id) REFERENCES teams(id)
 );
 
--- Inseriamo qualche squadra di test per far vedere che funziona
-INSERT INTO teams (name, group_name, points) VALUES ('Lupi Solitari', 'A', 3);
-INSERT INTO teams (name, group_name, points) VALUES ('Aquile Reali', 'A', 0);
-INSERT INTO teams (name, group_name, points) VALUES ('Pantere Nere', 'B', 1);
-INSERT INTO teams (name, group_name, points) VALUES ('Falchi', 'B', 2);
-
 CREATE TABLE tournament_settings (
   setting_key TEXT PRIMARY KEY,
   setting_value TEXT NOT NULL
 );
 
-INSERT INTO tournament_settings (setting_key, setting_value) VALUES ('format', 'gironi');
+INSERT INTO tournament_settings (setting_key, setting_value) VALUES ('format', 'gironi_e_finali');
 INSERT INTO tournament_settings (setting_key, setting_value) VALUES ('has_return_matches', 'false');
-INSERT INTO tournament_settings (setting_key, setting_value) VALUES ('status', 'registration');
+INSERT INTO tournament_settings (setting_key, setting_value) VALUES ('status', 'settings_setup');
 INSERT INTO tournament_settings (setting_key, setting_value) VALUES ('courts_count', '2');
 INSERT INTO tournament_settings (setting_key, setting_value) VALUES ('match_duration_minutes', '40');
 INSERT INTO tournament_settings (setting_key, setting_value) VALUES ('break_between_matches_minutes', '5');
-INSERT INTO tournament_settings (setting_key, setting_value) VALUES ('start_date_time', '2026-06-01T09:00');
+INSERT INTO tournament_settings (setting_key, setting_value) VALUES ('start_date_time', '');

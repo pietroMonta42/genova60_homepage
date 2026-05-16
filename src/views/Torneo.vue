@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { API_BASE } from '../config.js'
 
 const isDarkMode = ref(document.documentElement.getAttribute('data-theme') === 'dark')
 
@@ -13,7 +14,7 @@ const loading = ref(true)
 
 onMounted(async () => {
   try {
-    const res = await fetch('http://localhost:8787/api/teams')
+    const res = await fetch(`${API_BASE}/api/teams`)
     if (res.ok) teams.value = await res.json()
   } catch (e) {
     console.error('Error fetching data', e)

@@ -48,4 +48,18 @@ Infine, pubblica il codice dell'API online:
 ```bash
 npx wrangler deploy
 ```
-Wrangler ti restituirà un URL pubblico (es. `https://torneo-api.<tuo-nome>.workers.dev`). Dovrai poi aggiornare il frontend (i componenti `Torneo.vue` e `TorneoAdmin.vue`) per fargli usare quell'URL invece di `http://localhost:8787`.
+Wrangler ti restituirà un URL pubblico (es. `https://torneo-api.<tuo-nome>.workers.dev`).
+
+### 6. Configurare il Frontend per la Produzione
+
+Su Cloudflare Pages, imposta una variabile d'ambiente `VITE_API_URL` con l'URL del worker:
+
+```bash
+npx wrangler pages secret put VITE_API_URL
+```
+
+Oppure nella dashboard Cloudflare Pages → nome-progetto → **Settings → Environment variables**:
+- **Variable name**: `VITE_API_URL`
+- **Value**: `https://torneo-api.<tuo-nome>.workers.dev`
+
+Poi ridistribuisci il frontend. Il sistema userà automaticamente l'URL di produzione invece di `http://localhost:8787`.

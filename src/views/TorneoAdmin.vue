@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { API_BASE } from '../config.js'
 
 const router = useRouter()
 const isDarkMode = ref(document.documentElement.getAttribute('data-theme') === 'dark')
@@ -16,7 +17,7 @@ const loginError = ref('')
 
 const teams = ref([])
 const settings = ref({
-  format: 'gironi',
+  format: 'gironi_e_finali',
   has_return_matches: 'false',
   status: 'settings_setup',
   courts_count: '2',
@@ -27,6 +28,9 @@ const settings = ref({
 
 const newTeam = ref({ name: '' })
 const createTeamStatus = ref('')
+
+const editingTeamId = ref(null)
+const editingTeamName = ref('')
 
 const updateSettingsStatus = ref('')
 
@@ -48,8 +52,8 @@ const knockoutConfig = ref({
 const fetchData = async () => {
   try {
     const [teamsRes, settingsRes] = await Promise.all([
-      fetch('http://localhost:8787/api/teams'),
-      fetch('http://localhost:8787/api/settings')
+      fetch(`${API_BASE}/api/teams`),
+      fetch(`${API_BASE}/api/settings`)
     ])
     if (teamsRes.ok) teams.value = await teamsRes.json()
     if (settingsRes.ok) {
@@ -75,7 +79,7 @@ const login = async () => {
     loginError.value = 'Inserisci una chiave segreta'; return;
   }
   try {
-    const res = await fetch('http://localhost:8787/api/auth/verify', {
+    const res = await fetch(`${API_BASE}/api/auth/verify`, {
       headers: { 'Authorization': `Bearer ${secretKey.value}` }
     })
     if (res.ok) {
@@ -103,7 +107,7 @@ const nextPhase = async (newStatus) => {
 const updateSettings = async () => {
   updateSettingsStatus.value = 'Salvataggio...'
   try {
-    const res = await fetch('http://localhost:8787/api/settings', {
+    const res = await fetch(`${API_BASE}/api/settings`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify(settings.value)
@@ -123,7 +127,7 @@ const updateSettings = async () => {
 const createTeam = async () => {
   createTeamStatus.value = 'Creazione in corso...'
   try {
-    const res = await fetch('http://localhost:8787/api/teams', {
+    const res = await fetch(`${API_BASE}/api/teams`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify(newTeam.value)
@@ -137,6 +141,56 @@ const createTeam = async () => {
     }
   } catch (e) {
     createTeamStatus.value = 'Errore di connessione al server.'
+  }
+}
+
+// Edit / Delete Teams
+const editTeamName = (team) => {
+  editingTeamId.value = team.id
+  editingTeamName.value = team.name
+}
+
+const saveTeamName = async (team) => {
+  if (!editingTeamName.value.trim()) return
+  try {
+    const res = await fetch(`${API_BASE}/api/teams/${team.id}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ name: editingTeamName.value.trim() })
+    })
+    if (res.ok) {
+      editingTeamId.value = null
+      editingTeamName.value = ''
+      await fetchData()
+    } else {
+      const err = await res.json().catch(() => ({}))
+      alert(err.error || 'Errore durante la modifica.')
+    }
+  } catch (e) {
+    alert('Errore di connessione.')
+  }
+}
+
+const cancelEditTeam = () => {
+  editingTeamId.value = null
+  editingTeamName.value = ''
+}
+
+const deleteTeam = async (team) => {
+  if (!confirm(`Sei sicuro di voler eliminare "${team.name}"?`)) return
+  try {
+    const res = await fetch(`${API_BASE}/api/teams/${team.id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${secretKey.value}` }
+    })
+    if (res.ok) {
+      await fetchData()
+    } else {
+      const err = await res.json().catch(() => ({}))
+      alert(err.error || 'Errore durante l\'eliminazione.')
+    }
+  } catch (e) {
+    alert('Errore di connessione.')
   }
 }
 
@@ -178,7 +232,7 @@ const saveGroupsAndPreview = async () => {
 
   try {
     const updates = teams.value.map(t => ({ id: t.id, group_name: t.group_name || '' }));
-    const res = await fetch('http://localhost:8787/api/teams/groups', {
+    const res = await fetch(`${API_BASE}/api/teams/groups`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify(updates)
@@ -213,7 +267,7 @@ const generatePreview = async (type) => {
     const endpoint = type === 'groups' ? '/api/matches/preview' : '/api/matches/preview_knockout';
     const body = type === 'knockout' ? JSON.stringify(knockoutConfig.value) : undefined;
     
-    const res = await fetch(`http://localhost:8787${endpoint}`, {
+    const res = await fetch(`${API_BASE}${endpoint}`, {
       method: 'POST',
       headers: authHeaders(),
       body: body
@@ -234,7 +288,7 @@ const confirmAndSaveMatches = async () => {
   generateMatchesStatus.value = 'Salvataggio in corso...'
   try {
     const nextStatus = previewType.value === 'groups' ? 'groups_in_progress' : 'knockout_in_progress';
-    const res = await fetch('http://localhost:8787/api/matches/bulk', {
+    const res = await fetch(`${API_BASE}/api/matches/bulk`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({ matches: previewMatches.value, new_status: nextStatus })
@@ -311,7 +365,7 @@ const onDrop = (e, targetIndex) => {
       <div v-else class="admin-panel mt-4">
         <div style="display: flex; justify-content: space-between; align-items: center;" class="mb-4">
           <h1>Gestione Torneo</h1>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
             <span class="status-badge" :class="settings.status === 'settings_setup' ? 'active' : ''">IMPOSTAZIONI</span>
             <span class="status-badge" :class="settings.status === 'registration' ? 'active' : ''">ISCRIZIONI</span>
             <span class="status-badge" :class="settings.status === 'groups_setup' ? 'active' : ''">GIRONI</span>
@@ -379,8 +433,21 @@ const onDrop = (e, targetIndex) => {
 
             <div class="mt-4" v-if="teams.length > 0">
               <h4>Squadre Iscritte ({{ teams.length }})</h4>
-              <div class="teams-list mt-2">
-                <span v-for="t in teams" :key="t.id" class="badge-team">{{ t.name }}</span>
+              <div class="teams-manage-list mt-2">
+                <div v-for="t in teams" :key="t.id" class="team-manage-row">
+                  <template v-if="editingTeamId === t.id">
+                    <input type="text" class="form-control form-control-sm" v-model="editingTeamName" @keyup.enter="saveTeamName(t)" @keyup.escape="cancelEditTeam" ref="editInput" />
+                    <button @click="saveTeamName(t)" class="btn btn-sm btn-primary">Salva</button>
+                    <button @click="cancelEditTeam" class="btn btn-sm btn-secondary">Annulla</button>
+                  </template>
+                  <template v-else>
+                    <span class="team-name-text">{{ t.name }}</span>
+                    <div class="team-actions">
+                      <button @click="editTeamName(t)" class="btn btn-sm btn-icon" title="Modifica">✏️</button>
+                      <button @click="deleteTeam(t)" class="btn btn-sm btn-icon btn-icon-danger" title="Elimina">🗑️</button>
+                    </div>
+                  </template>
+                </div>
               </div>
             </div>
 
@@ -493,6 +560,9 @@ const onDrop = (e, targetIndex) => {
 
       </div>
     </main>
+    <footer class="page-footer">
+      <router-link to="/torneo/admin/reset" class="reset-link">Reset Torneo</router-link>
+    </footer>
   </div>
 </template>
 
@@ -762,6 +832,79 @@ const onDrop = (e, targetIndex) => {
   display: flex;
   gap: 0.5rem;
   min-width: 300px;
+}
+
+/* Team Management */
+.teams-manage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.team-manage-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: var(--bg-color);
+  border: 1px solid var(--card-border);
+  border-radius: 0.5rem;
+}
+.team-manage-row:hover {
+  border-color: var(--accent-green);
+}
+.team-name-text {
+  flex: 1;
+  font-weight: 600;
+}
+.team-actions {
+  display: flex;
+  gap: 0.3rem;
+}
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 1rem;
+  transition: background 0.15s;
+}
+.btn-icon:hover {
+  background: var(--card-border);
+}
+.btn-sm {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  border-radius: 0.4rem;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-secondary {
+  background: var(--card-border);
+  color: var(--text-primary);
+}
+
+.page-footer {
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid var(--card-border);
+  margin-top: auto;
+}
+.reset-link {
+  font-size: 0.75rem;
+  color: #e53e3e;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid #e53e3e;
+  border-radius: 0.3rem;
+  transition: all 0.15s;
+}
+.reset-link:hover {
+  background: #e53e3e;
+  color: white;
 }
 
 @media (max-width: 768px) {
