@@ -3,13 +3,9 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { TournamentBracket } from 'vue3-tournament'
 import 'vue3-tournament/style.css'
 import { API_BASE } from '../config.js'
+import { useTheme } from '../useTheme.js'
 
-const isDarkMode = ref(document.documentElement.getAttribute('data-theme') === 'dark')
-
-const toggleTheme = () => {
-  isDarkMode.value = !isDarkMode.value
-  document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light')
-}
+const { isDarkMode, toggleTheme } = useTheme()
 
 const matches = ref([])
 const loading = ref(true)

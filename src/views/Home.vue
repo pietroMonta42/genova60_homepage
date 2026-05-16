@@ -1,20 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { useTheme } from '../useTheme.js'
 
-const isDarkMode = ref(false)
-
-const toggleTheme = () => {
-  isDarkMode.value = !isDarkMode.value
-  document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light')
-}
-
-onMounted(() => {
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  if (prefersDark) {
-    isDarkMode.value = true
-    document.documentElement.setAttribute('data-theme', 'dark')
-  }
-})
+const { isDarkMode, toggleTheme } = useTheme()
 </script>
 
 <template>

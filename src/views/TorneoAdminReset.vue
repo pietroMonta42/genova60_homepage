@@ -2,16 +2,13 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { API_BASE } from '../config.js'
+import { saveAuth, getSavedAuth, clearAuth } from '../auth.js'
+import { useTheme } from '../useTheme.js'
 
 const router = useRouter()
-const isDarkMode = ref(document.documentElement.getAttribute('data-theme') === 'dark')
+const { isDarkMode, toggleTheme } = useTheme()
 
-const toggleTheme = () => {
-  isDarkMode.value = !isDarkMode.value
-  document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light')
-}
-
-const secretKey = ref(sessionStorage.getItem('genova60_secret') || '')
+const secretKey = ref(getSavedAuth() || '')
 const isAuthenticated = ref(false)
 const loginError = ref('')
 
@@ -29,7 +26,7 @@ const login = async () => {
     })
     if (res.ok) {
       isAuthenticated.value = true
-      sessionStorage.setItem('genova60_secret', secretKey.value)
+      saveAuth(secretKey.value)
     } else {
       loginError.value = 'Password errata'
     }
@@ -94,12 +91,14 @@ onMounted(() => {
     <main class="container section flex-center">
       <div v-if="!isAuthenticated" class="card login-card p-4">
         <h2 class="text-center mb-4" style="color: var(--accent-green);">Reset Torneo</h2>
-        <div class="form-group">
-          <label for="secret">Chiave Segreta</label>
-          <input type="password" id="secret" v-model="secretKey" @keyup.enter="login" class="form-control" placeholder="Inserisci la secret key" />
-        </div>
-        <p v-if="loginError" class="error-text">{{ loginError }}</p>
-        <button @click="login" class="btn btn-primary w-100 mt-3">Accedi</button>
+        <form @submit.prevent="login">
+          <div class="form-group">
+            <label for="secret">Chiave Segreta</label>
+            <input type="password" id="secret" name="secret" v-model="secretKey" autocomplete="current-password" class="form-control" placeholder="Inserisci la secret key" />
+          </div>
+          <p v-if="loginError" class="error-text">{{ loginError }}</p>
+          <button type="submit" class="btn btn-primary w-100 mt-3">Accedi</button>
+        </form>
       </div>
 
       <div v-else class="reset-page mt-4">

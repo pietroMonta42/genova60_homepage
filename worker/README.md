@@ -52,14 +52,44 @@ Wrangler ti restituirà un URL pubblico (es. `https://torneo-api.<tuo-nome>.work
 
 ### 6. Configurare il Frontend per la Produzione
 
-Su Cloudflare Pages, imposta una variabile d'ambiente `VITE_API_URL` con l'URL del worker:
+Su Cloudflare Pages, imposta una variabile d'ambiente **di build** `VITE_API_URL` con l'URL del worker.
 
-```bash
-npx wrangler pages secret put VITE_API_URL
-```
-
-Oppure nella dashboard Cloudflare Pages → nome-progetto → **Settings → Environment variables**:
+Nella dashboard Cloudflare Pages → nome-progetto → **Settings → Environment variables → Production**:
 - **Variable name**: `VITE_API_URL`
 - **Value**: `https://torneo-api.<tuo-nome>.workers.dev`
 
+⚠️ **Importante:** `VITE_API_URL` deve essere un **Environment variable** (non un Secret). Vite legge le env al momento del build, non al runtime.
+
 Poi ridistribuisci il frontend. Il sistema userà automaticamente l'URL di produzione invece di `http://localhost:8787`.
+
+## Log e Debug
+
+### Log in tempo reale (tail)
+Per vedere le richieste e i log del worker in tempo reale:
+
+```bash
+npx wrangler tail
+```
+
+Mostra ogni richiesta con status code, metodo, URL ed eventuali `console.log()` presenti nel codice.
+
+### Log nella Dashboard
+Con `[observability] enabled = true` in `wrangler.toml`, i log sono visibili anche nella dashboard Cloudflare:
+
+Cloudflare Dashboard → Workers & Pages → **torneo-api** → **Logs** / **Observability**
+
+Qui puoi vedere cronologia, errori e metriche del worker senza tenere il terminale aperto.
+
+### Sviluppo Locale
+Per testare il worker in locale con il database D1:
+
+```bash
+npx wrangler dev --remote
+```
+
+Oppure con un database locale:
+
+```bash
+npx wrangler d1 execute torneo-db --local --file=./schema.sql
+npx wrangler dev
+```

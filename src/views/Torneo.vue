@@ -1,13 +1,9 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { API_BASE } from '../config.js'
+import { useTheme } from '../useTheme.js'
 
-const isDarkMode = ref(document.documentElement.getAttribute('data-theme') === 'dark')
-
-const toggleTheme = () => {
-  isDarkMode.value = !isDarkMode.value
-  document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light')
-}
+const { isDarkMode, toggleTheme } = useTheme()
 
 const teams = ref([])
 const loading = ref(true)

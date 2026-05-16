@@ -1,14 +1,12 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { API_BASE } from '../config.js'
+import { saveAuth, getSavedAuth, clearAuth } from '../auth.js'
+import { useTheme } from '../useTheme.js'
 
-const isDarkMode = ref(document.documentElement.getAttribute('data-theme') === 'dark')
-const toggleTheme = () => {
-  isDarkMode.value = !isDarkMode.value
-  document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light')
-}
+const { isDarkMode, toggleTheme } = useTheme()
 
-const secretKey = ref(sessionStorage.getItem('genova60_secret') || '')
+const secretKey = ref(getSavedAuth() || '')
 const isAuthenticated = ref(false)
 const loginError = ref('')
 const matches = ref([])
@@ -23,7 +21,7 @@ const login = async () => {
     })
     if (res.ok) {
       isAuthenticated.value = true
-      sessionStorage.setItem('genova60_secret', secretKey.value)
+      saveAuth(secretKey.value)
       await fetchMatches()
     } else {
       loginError.value = 'Password errata'
@@ -31,6 +29,13 @@ const login = async () => {
   } catch (e) {
     loginError.value = 'Errore di connessione'
   }
+}
+
+const logout = () => {
+  clearAuth()
+  secretKey.value = ''
+  isAuthenticated.value = false
+  loginError.value = ''
 }
 
 const authHeaders = () => ({
@@ -126,6 +131,7 @@ const endMatch = async (match) => {
         <div class="nav-links">
           <router-link to="/torneo/admin" class="nav-link">Torna al Setup</router-link>
           <router-link to="/torneo" class="nav-link">Sito Pubblico</router-link>
+          <button @click="logout" class="logout-btn" title="Esci (cancella autenticazione)">Logout</button>
           <button @click="toggleTheme" class="theme-toggle" aria-label="Toggle Dark Mode">
             <svg v-if="!isDarkMode" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
             <svg v-else xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
@@ -137,12 +143,14 @@ const endMatch = async (match) => {
     <main class="container section flex-center" v-if="!isAuthenticated">
       <div class="card login-card p-4">
         <h2 class="text-center mb-4" style="color: var(--accent-green);">Area Giuria</h2>
-        <div class="form-group">
-          <label for="secret">Chiave Segreta</label>
-          <input type="password" id="secret" v-model="secretKey" @keyup.enter="login" class="form-control" placeholder="Inserisci la secret key" />
-        </div>
-        <p v-if="loginError" class="error-text">{{ loginError }}</p>
-        <button @click="login" class="btn btn-primary w-100 mt-3">Accedi al Calendario</button>
+        <form @submit.prevent="login">
+          <div class="form-group">
+            <label for="secret">Chiave Segreta</label>
+            <input type="password" id="secret" name="secret" v-model="secretKey" autocomplete="current-password" class="form-control" placeholder="Inserisci la secret key" />
+          </div>
+          <p v-if="loginError" class="error-text">{{ loginError }}</p>
+          <button type="submit" class="btn btn-primary w-100 mt-3">Accedi al Calendario</button>
+        </form>
       </div>
     </main>
 
@@ -291,6 +299,22 @@ const endMatch = async (match) => {
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 50%;
+}
+.logout-btn {
+  background: none;
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.3rem;
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: all 0.15s;
+}
+.logout-btn:hover {
+  color: #e53e3e;
+  border-color: #e53e3e;
 }
 .login-card {
   width: 100%;
